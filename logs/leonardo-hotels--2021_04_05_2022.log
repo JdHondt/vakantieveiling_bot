@@ -1,0 +1,24 @@
+2022-05-04 11:30:14,998 INFO New auction: leonardo-hotels--2021
+2022-05-04 11:30:15,000 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:30:15,508 DEBUG https://www.vakantieveilingen.nl:443 "GET /veilingen/hotels/luxe-hotels/leonardo-hotels--2021/8362 HTTP/1.1" 200 21086
+2022-05-04 11:30:15,513 INFO Lot ID: 63572322, still have 64.75 minutes to go
+2022-05-04 11:30:15,514 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:30:15,661 DEBUG https://www.vakantieveilingen.nl:443 "POST /api.json?1651656614998&m=getLotDetails&v=1651656614998&js=1 HTTP/1.1" 200 598
+2022-05-04 11:30:15,666 DEBUG No winner yet
+2022-05-04 11:30:15,666 DEBUG Top bid: sherani Rambhajan - 2
+2022-05-04 11:30:31,516 INFO New auction: leonardo-hotels--2021
+2022-05-04 11:30:31,517 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:30:31,822 DEBUG https://www.vakantieveilingen.nl:443 "GET /veilingen/hotels/luxe-hotels/leonardo-hotels--2021/8362 HTTP/1.1" 200 21085
+2022-05-04 11:30:31,837 INFO Lot ID: 63572322, still have 64.47 minutes to go
+2022-05-04 11:30:31,840 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:30:31,993 DEBUG https://www.vakantieveilingen.nl:443 "POST /api.json?1651656631516&m=getLotDetails&v=1651656631516&js=1 HTTP/1.1" 200 597
+2022-05-04 11:30:31,998 DEBUG No winner yet
+2022-05-04 11:30:31,998 DEBUG Top bid: sherani Rambhajan - 2
+2022-05-04 11:35:44,438 INFO New auction: leonardo-hotels--2021
+2022-05-04 11:35:44,439 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:35:44,949 DEBUG https://www.vakantieveilingen.nl:443 "GET /veilingen/hotels/luxe-hotels/leonardo-hotels--2021/8362 HTTP/1.1" 200 21027
+2022-05-04 11:35:44,952 INFO Lot ID: 63572322, still have 59.26 minutes to go
+2022-05-04 11:35:44,953 DEBUG Starting new HTTPS connection (1): www.vakantieveilingen.nl:443
+2022-05-04 11:35:45,107 DEBUG https://www.vakantieveilingen.nl:443 "POST /api.json?1651656944438&m=getLotDetails&v=1651656944438&js=1 HTTP/1.1" 200 778
+2022-05-04 11:35:45,111 DEBUG No winner yet
+2022-05-04 11:35:45,111 DEBUG Top bid: Meghan Tevreden - 43

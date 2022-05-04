@@ -3,10 +3,11 @@ import json
 import datetime
 import time
 import re
-try: 
-    from BeautifulSoup import BeautifulSoup
-except ImportError:
-    from bs4 import BeautifulSoup
+import os
+import sys
+import logging
+
+
 
 def get_lot_details(url):
 	response = requests.request("GET", url)
@@ -62,74 +63,103 @@ def update_lot(lot_id, url):
 
 		if len(js["errors"]) > 0:
 			errors = js["errors"]
-			print("Got errors:")
+			logging.info("Got errors:")
 			for err in errors:
-				print(err["code"],err["description"])
+				logging.info(err["code"],err["description"])
 		else:
-			print("Everything went ok!")
-
 			data = js["data"]
 			winr = data["hasWinner"]
 
 			bids = data["bidHistory"]
 
-			lastbid = bids[0]
-
-			return winr, {
-				"first_name": lastbid['customer']['firstName'],
-				"last_name": lastbid['customer']['lastName'],
-				"bid": lastbid['price']
+			lastbid = {
+				"first_name": None,
+				"last_name": None,
+				"bid": 0,			
 			}
+			if len(bids) > 0:
+				lastbid_data = bids[0]
+				lastbid["first_name"] = lastbid_data['customer']['firstName']
+				lastbid["last_name"] = lastbid_data['customer']['lastName']
+				lastbid["bid"] = lastbid_data['price']
+
+			return winr, len(bids), lastbid
 	else:
+		logging.debug(f"Wrong status code: {response.status_code}")
+		logging.debug(f"Text: {response.text}")
 
-		print("Wrong status code:", response.status_code)
-		print("Text:",response.text)
 
-
-def main():
+def main(mainurl):
 	# mainurl = "https://www.vakantieveilingen.nl/veilingen/hotels/luxe-hotels/leonardo-hotels--2021/8362"
 	# mainurl = "https://www.vakantieveilingen.nl/veilingen/producten/elektronica/koptelefoon-hyundai-zwart-noise-cancelling/19637"
-	mainurl = "https://www.vakantieveilingen.nl/veilingen/producten/elektronica/boombox-36-w-techbird/17628"
+	# mainurl = "https://www.vakantieveilingen.nl/veilingen/producten/elektronica/boombox-36-w-techbird/17628"
+	# mainurl = "https://www.vakantieveilingen.nl/veilingen/eten-en-drinken/vlees-en-vis/kippendijfilets-thuisbezorgd/20294"
 
 	name = mainurl.split("/")[-2]
+	outpath = f"output/{name}.csv"
+	nowts = datetime.datetime.now().timestamp()
+	nowdate = datetime.datetime.fromtimestamp(nowts)
 
+	# Create logger
+	logging.basicConfig(level=logging.DEBUG,
+			format='%(asctime)s %(levelname)s %(message)s',
+      		filename=f"logs/{name}_{nowdate.strftime('%d_%m_%Y')}.log",
+      		filemode='a')
 
-	# Iterate until there are no auctions anymore
-	# TODO: add auction stop clause
-	while True:
-		print(f"New auction: {name}")
+	try:
+		# Iterate until there are no auctions anymore
+		# TODO: add auction stop clause
+		while True:
+			logging.info(f"New auction: {name}")
 
-		# Get lot meta-info
-		lotid, endts = get_lot_details(mainurl)
-		nowts = datetime.datetime.now().timestamp()
-		timediff = (endts - nowts) / 60
-		print("Lot ID: {lotid}, still have {ts:.2f} minutes to go".format(lotid=lotid,ts=timediff))
+			# Get lot meta-info
+			lotid, endts = get_lot_details(mainurl)
+			timediff = (endts - nowts) / 60
+			logging.info("Lot ID: {lotid}, still have {ts:.2f} minutes to go".format(lotid=lotid,ts=timediff))
 
-		# Get lot biddings until auction is done
-		done = False
+			# Get lot biddings until auction is done
+			done = False
 
-		while not done:
-			msts = int(nowts * 1000)
-			url = f"https://www.vakantieveilingen.nl/api.json?{msts}&m=getLotDetails&v={msts}&js=1"
-			winr, topbid = update_lot(lotid, url)
+			while not done:
+				msts = int(nowts * 1000)
+				url = f"https://www.vakantieveilingen.nl/api.json?{msts}&m=getLotDetails&v={msts}&js=1"
+				winr, bidcount, topbid = update_lot(lotid, url)
 
-			if winr: # Save winning bid info
-				print("We have a winner!")
-				print("Winning bid:", topbid["first_name"],topbid["last_name"],"-",topbid["bid"])
-				print("Saving...")
+				if winr: # Save winning bid info
+					logging.debug("We have a winner!")
+					logging.info(f"Winning bid: {topbid['first_name']} {topbid['last_name']} - {topbid['bid']}")
+					logging.debug("Saving...")
 
-				
+					# Append to csv file
+					if not os.path.exists(outpath):
+						f = open(outpath, "w")
 
-				done = True
-			elif topbid: # Sleep until auction is over
-				print("No winner yet")
-				print("Top bid:", topbid["first_name"],topbid["last_name"],"-",topbid["bid"])
+						# Create header
+						f.write("Timestamp,firstName,lastName,bid,bidcount\n")
+						f.close()
 
-				time.sleep(timediff * 60)
-			else:
-				print("Something went wrong in getting bid info, getting new info")
-				done = True
+					with open(outpath, "a") as f:
+						f.write(",".join([str(i) for i in [
+								msts,
+								topbid["first_name"],
+								topbid["last_name"],
+								topbid["bid"],
+								bidcount
+								]]) + '\n')
+
+					done = True
+				elif topbid: # Sleep until auction is over
+					logging.debug("No winner yet")
+					logging.debug(f"Top bid: {topbid['first_name']} {topbid['last_name']} - {topbid['bid']}")
+
+					time.sleep(timediff * 60)
+				else:
+					logging.debug("Something went wrong in getting bid info, getting new info")
+					done = True
+	except:
+		logging.error("Got exception on main handler")
+		raise
 
 
 if __name__ == '__main__':
-	main()
+	main(*sys.argv[1:])
